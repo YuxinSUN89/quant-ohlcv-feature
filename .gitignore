@@ -4,3 +4,9 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+.venv/
+_convert_*.py
+
+# Test artefacts
+tests/data/
+tests/results/
