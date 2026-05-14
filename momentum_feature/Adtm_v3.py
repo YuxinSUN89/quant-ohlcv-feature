@@ -1,20 +1,10 @@
-import numpy  as np
+import numpy as np
 import pandas as pd
 
-
-# ===== Function: 0-1 normalization
-def scale_01(_s, _n):
-    _s = (pd.Series(_s) - pd.Series(_s).rolling(_n, min_periods=1).min()) / (
-        1e-9 + pd.Series(_s).rolling(_n, min_periods=1).max() - pd.Series(_s).rolling(_n, min_periods=1).min()
-    )
-    return pd.Series(_s)
+from helpers import scale_01
 
 
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # Adtm indicator
     """
     N=20
@@ -32,18 +22,18 @@ def signal(*args):
     a sell signal is generated when Adtm crosses below -0.5.
 
     """
-    tmp1_s = df['high'] - df['open']  # HIGH-OPEN
-    tmp2_s = df['open'] - df['open'].shift(1)  # OPEN-REF(OPEN,1)
-    tmp3_s = df['open'] - df['low']  # OPEN-LOW
-    tmp4_s = df['open'].shift(1) - df['open']  # REF(OPEN,1)-OPEN
+    tmp1_s = df["high"] - df["open"]  # HIGH-OPEN
+    tmp2_s = df["open"] - df["open"].shift(1)  # OPEN-REF(OPEN,1)
+    tmp3_s = df["open"] - df["low"]  # OPEN-LOW
+    tmp4_s = df["open"].shift(1) - df["open"]  # REF(OPEN,1)-OPEN
 
-    dtm = np.where(df['open'] > df['open'].shift(1), np.maximum(tmp1_s, tmp2_s), 0)
-    dbm = np.where(df['open'] < df['open'].shift(1), np.maximum(tmp3_s, tmp4_s), 0)
-    stm = pd.Series(dtm).rolling(n, min_periods=1).sum()
-    sbm = pd.Series(dbm).rolling(n, min_periods=1).sum()
+    dtm = np.where(df["open"] > df["open"].shift(1), np.maximum(tmp1_s, tmp2_s), 0)
+    dbm = np.where(df["open"] < df["open"].shift(1), np.maximum(tmp3_s, tmp4_s), 0)
+    stm = pd.Series(dtm).rolling(n, min_periods=config.min_periods).sum()
+    sbm = pd.Series(dbm).rolling(n, min_periods=config.min_periods).sum()
 
-    signal = (stm - sbm) / (1e-9 + pd.Series(stm).combine(pd.Series(sbm), max).values)
-    signal = df['close'] - signal
-    df[factor_name] = scale_01(signal, n)
+    signal = (stm - sbm) / (config.normalize_eps + pd.Series(stm).combine(pd.Series(sbm), max).values)
+    signal = df["close"] - signal
+    df[factor_name] = scale_01(signal, n, config.normalize_eps, config=config)
 
     return df

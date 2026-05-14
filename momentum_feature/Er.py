@@ -1,13 +1,6 @@
-eps = 1e-8
-
-
-def signal(*args):
+def signal(df, n, factor_name, config):
     # Er indicator
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
-    '''
+    """
     N=20
     BullPower=HIGH-EMA(CLOSE,N)
     BearPower=LOW-EMA(CLOSE,N)
@@ -18,15 +11,15 @@ def signal(*args):
     when both are less than 0, it reflects that bears dominate.
     If BearPower crosses above 0, a buy signal is generated;
     if BullPower crosses below 0, a sell signal is generated.
-    '''
+    """
 
     a = 2 / (n + 1)
-    df['ema'] = df['close'].ewm(alpha=a, adjust=False).mean()
-    df['BullPower'] = (df['high'] - df['ema']) / df['ema']
-    df['BearPower'] = (df['low'] - df['ema']) / df['ema']
-    df[factor_name] = df['BullPower'] + df['BearPower']
+    df["ema"] = df["close"].ewm(alpha=a, adjust=config.ewm_adjust).mean()
+    df["BullPower"] = (df["high"] - df["ema"]) / df["ema"]
+    df["BearPower"] = (df["low"] - df["ema"]) / df["ema"]
+    df[factor_name] = df["BullPower"] + df["BearPower"]
 
     # delete extra columns
-    del df['ema'], df['BullPower'], df['BearPower']
+    del df["ema"], df["BullPower"], df["BearPower"]
 
     return df

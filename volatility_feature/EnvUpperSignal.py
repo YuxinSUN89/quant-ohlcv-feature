@@ -1,20 +1,9 @@
-import pandas as pd
+from helpers import scale_zscore
 
 
-# ===== Function: zscore normalization
-def scale_zscore(_s, _n):
-    _s = (pd.Series(_s) - pd.Series(_s).rolling(_n, min_periods=1).mean()
-          ) / pd.Series(_s).rolling(_n, min_periods=1).std()
-    return pd.Series(_s)
-
-
-def signal(*args):
+def signal(df, n, factor_name, config):
     # EnvUpperSignal
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
-    '''
+    """
     N=25
     PARAM=0.05
     MAC=MA(CLOSE,N)
@@ -26,11 +15,11 @@ def signal(*args):
     Therefore, the moving average is shifted up and down.
     A buy signal is generated when price breaks through the upper band, and a sell signal when it breaks through the lower band.
     This approach can eliminate many false signals.
-    '''
+    """
 
-    upper = (1 + 0.05) * df['close'].rolling(n, min_periods=1).mean()
+    upper = (1 + 0.05) * df["close"].rolling(n, min_periods=config.min_periods).mean()
 
-    s = df['close'] - upper
-    df[factor_name] = scale_zscore(s, n)
+    s = df["close"] - upper
+    df[factor_name] = scale_zscore(s, n, config=config)
 
     return df

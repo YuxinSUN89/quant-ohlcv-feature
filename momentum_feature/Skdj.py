@@ -1,8 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # SKDJ indicator
     """
     N=60
@@ -15,14 +11,21 @@ def signal(*args):
     and D in SKDJ is the moving average of D in KDJ. Usage is the same as KDJ.
     Buy when D < 40 (oversold) and K crosses above D; sell when D > 60 (overbought) and K crosses below D.
     """
-    df['RSV'] = (df['close'] - df['low'].rolling(n, min_periods=1).min()) / (df['high'].rolling(n, min_periods=1).max() - df['low'].rolling(n, min_periods=1).min()) * 100
-    df['MARSV'] = df['RSV'].ewm(com=2).mean()
+    df["RSV"] = (
+        (df["close"] - df["low"].rolling(n, min_periods=config.min_periods).min())
+        / (
+            df["high"].rolling(n, min_periods=config.min_periods).max()
+            - df["low"].rolling(n, min_periods=config.min_periods).min()
+        )
+        * 100
+    )
+    df["MARSV"] = df["RSV"].ewm(com=2, adjust=config.ewm_adjust).mean()
 
-    df['K'] = df['MARSV'].ewm(com=2).mean()
-    df[factor_name] = df['K'].rolling(3, min_periods=1).mean()
-    
-    del df['RSV']
-    del df['MARSV']
-    del df['K']
+    df["K"] = df["MARSV"].ewm(com=2, adjust=config.ewm_adjust).mean()
+    df[factor_name] = df["K"].rolling(3, min_periods=config.min_periods).mean()
+
+    del df["RSV"]
+    del df["MARSV"]
+    del df["K"]
 
     return df

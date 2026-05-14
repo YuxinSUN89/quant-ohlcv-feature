@@ -1,4 +1,4 @@
-def signal(*args):
+def signal(df, n, factor_name, config):
     # PMO indicator
     """
     N1=10
@@ -14,19 +14,15 @@ def signal(*args):
     A larger PMO (above 0) indicates a stronger uptrend; a smaller PMO (below 0) indicates
     a stronger downtrend. Buy/sell signals are generated when PMO crosses above/below its signal line.
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+    df["ROC"] = (df["close"] - df["close"].shift(1)) / df["close"].shift(1) * 100
+    df["ROC_MA"] = df["ROC"].rolling(n, min_periods=config.min_periods).mean()
+    df["ROC_MA10"] = df["ROC_MA"] * 10
+    df["PMO"] = df["ROC_MA10"].rolling(4 * n, min_periods=config.min_periods).mean()
+    df[factor_name] = df["PMO"].rolling(2 * n, min_periods=config.min_periods).mean()
 
-    df['ROC'] = (df['close'] - df['close'].shift(1)) / df['close'].shift(1) * 100
-    df['ROC_MA'] = df['ROC'].rolling(n, min_periods=1).mean()
-    df['ROC_MA10'] = df['ROC_MA'] * 10
-    df['PMO'] = df['ROC_MA10'].rolling(4 * n, min_periods=1).mean()
-    df[factor_name] = df['PMO'].rolling(2 * n, min_periods=1).mean()
-
-    del df['ROC']
-    del df['ROC_MA']
-    del df['ROC_MA10']
-    del df['PMO']
+    del df["ROC"]
+    del df["ROC_MA"]
+    del df["ROC_MA10"]
+    del df["PMO"]
 
     return df

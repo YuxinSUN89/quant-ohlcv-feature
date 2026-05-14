@@ -1,12 +1,6 @@
-eps = 1e-8
-
-
-def signal(*args):
+def signal(df, n, factor_name, config):
     # Cv indicator
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+    eps = config.eps
     """
     N=10
     H_L_EMA=EMA(HIGH-LOW,N)
@@ -16,9 +10,9 @@ def signal(*args):
     if the absolute value of CV crosses above 70, sell.
     """
     # H_L_EMA=EMA(HIGH-LOW,N)
-    df['H_L_ema'] = (df['high'] - df['low']).ewm(n, adjust=False).mean()  
-    df[factor_name] = (df['H_L_ema'] - df['H_L_ema'].shift(n)) / (df['H_L_ema'].shift(n) + eps) * 100
+    df["H_L_ema"] = (df["high"] - df["low"]).ewm(span=n, adjust=config.ewm_adjust).mean()
+    df[factor_name] = (df["H_L_ema"] - df["H_L_ema"].shift(n)) / (df["H_L_ema"].shift(n) + eps) * 100
 
-    del df['H_L_ema']
+    del df["H_L_ema"]
 
     return df

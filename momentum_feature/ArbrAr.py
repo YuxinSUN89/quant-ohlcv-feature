@@ -1,8 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # ARBR indicator
     """
     AR=SUM((HIGH-OPEN),N)/SUM((OPEN-LOW),N)*100
@@ -13,11 +9,15 @@ def signal(*args):
     very weak; if AR crosses above 50 from below, prices may rise — buy at the low.
     Sell when AR crosses below 200.
     """
-    df['HO'] = df['high'] - df['open']
-    df['OL'] = df['open'] - df['low']
-    df[factor_name] = df['HO'].rolling(n).sum() / df['OL'].rolling(n).sum() * 100
+    df["HO"] = df["high"] - df["open"]
+    df["OL"] = df["open"] - df["low"]
+    df[factor_name] = (
+        df["HO"].rolling(n, min_periods=config.min_periods).sum()
+        / df["OL"].rolling(n, min_periods=config.min_periods).sum()
+        * 100
+    )
 
-    del df['HO']
-    del df['OL']
+    del df["HO"]
+    del df["OL"]
 
     return df

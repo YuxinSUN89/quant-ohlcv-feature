@@ -1,10 +1,7 @@
 import numpy as np
 
 
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+def signal(df, n, factor_name, config):
     # RVI indicator
     """
     N1=10
@@ -24,19 +21,19 @@ def signal(*args):
     A buy signal is generated when RVI crosses above 30;
     a sell signal is generated when RVI crosses below 70.
     """
-    df['std'] = df['close'].rolling(n, min_periods=1).std(ddof=0)
-    df['ustd'] = np.where(df['close'] > df['close'].shift(1), df['std'], 0)
-    df['sum_ustd'] = df['ustd'].rolling(2 * n).sum()
+    df["std"] = df["close"].rolling(n, min_periods=config.min_periods).std(ddof=config.ddof)
+    df["ustd"] = np.where(df["close"] > df["close"].shift(1), df["std"], 0)
+    df["sum_ustd"] = df["ustd"].rolling(2 * n, min_periods=config.min_periods).sum()
 
-    df['dstd'] = np.where(df['close'] < df['close'].shift(1), df['std'], 0)
-    df['sum_dstd'] = df['dstd'].rolling(2 * n).sum()
+    df["dstd"] = np.where(df["close"] < df["close"].shift(1), df["std"], 0)
+    df["sum_dstd"] = df["dstd"].rolling(2 * n, min_periods=config.min_periods).sum()
 
-    df[factor_name] = df['sum_ustd'] / (df['sum_ustd'] + df['sum_dstd']) * 100
-    
-    del df['std']
-    del df['ustd']
-    del df['sum_ustd']
-    del df['dstd']
-    del df['sum_dstd']
+    df[factor_name] = df["sum_ustd"] / (df["sum_ustd"] + df["sum_dstd"]) * 100
+
+    del df["std"]
+    del df["ustd"]
+    del df["sum_ustd"]
+    del df["dstd"]
+    del df["sum_dstd"]
 
     return df

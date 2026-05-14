@@ -1,19 +1,15 @@
 import talib as ta
 
 
-def signal(*args):
+def signal(df, n, factor_name, config):
     # Reg indicator (Close vs linear regression)
     # Formula: REG = LINEARREG(CLOSE, N); result = CLOSE / REG - 1
     # Measures the deviation of close from its N-period linear regression value.
     # Positive values indicate close is above the regression line (overextended upward); negative below.
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-    
-    df['reg_close'] = ta.LINEARREG(df['close'], timeperiod=n)  # talib built-in linear regression
-    df[factor_name] = df['close'] / df['reg_close'] - 1
+    df["reg_close"] = ta.LINEARREG(df["close"], timeperiod=n)  # talib built-in linear regression
+    df[factor_name] = df["close"] / df["reg_close"] - 1
 
     # remove redundant columns
-    del df['reg_close']
+    del df["reg_close"]
 
     return df

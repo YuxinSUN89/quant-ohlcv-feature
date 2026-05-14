@@ -1,7 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+def signal(df, n, factor_name, config):
     # VIDYA
     """
     N=10
@@ -15,12 +12,12 @@ def signal(*args):
     and avoiding excessive trading signals.
     Buy/sell signals are generated when the closing price crosses above/below VIDYA.
     """
-    _ts = df[['open', 'close']].sum(axis=1) / 2.
+    _ts = df[["open", "close"]].sum(axis=1) / 2.0
 
-    vi = (_ts - _ts.shift(n)).abs() / (_ts - _ts.shift(1)).abs().rolling(n, min_periods=1).sum()
+    vi = (_ts - _ts.shift(n)).abs() / (_ts - _ts.shift(1)).abs().rolling(n, min_periods=config.min_periods).sum()
     vidya = vi * _ts + (1 - vi) * _ts.shift(1)
 
     # normalize
-    df[factor_name] = vidya / df['close']
+    df[factor_name] = vidya / df["close"]
 
     return df

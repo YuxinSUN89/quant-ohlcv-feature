@@ -1,10 +1,7 @@
 import numpy as np
 
 
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+def signal(df, n, factor_name, config):
     # IMI indicator
     """
     N=14
@@ -16,15 +13,15 @@ def signal(*args):
     So RSI compares two consecutive days, while IMI compares within the same trading day.
     If IMI crosses above 80, a buy signal is generated; if IMI crosses below 20, a sell signal is generated.
     """
-    df['INC'] = np.where(df['close'] > df['open'], df['close'] - df['open'], 0)
-    df['INC_sum'] = df['INC'].rolling(n).sum()
-    df['DEC'] = np.where(df['open'] > df['close'], df['open'] - df['close'], 0)
-    df['DEC_sum'] = df['DEC'].rolling(n).sum()
-    df[factor_name] = df['INC_sum'] / (df['INC_sum'] + df['DEC_sum'])
+    df["INC"] = np.where(df["close"] > df["open"], df["close"] - df["open"], 0)
+    df["INC_sum"] = df["INC"].rolling(n, min_periods=config.min_periods).sum()
+    df["DEC"] = np.where(df["open"] > df["close"], df["open"] - df["close"], 0)
+    df["DEC_sum"] = df["DEC"].rolling(n, min_periods=config.min_periods).sum()
+    df[factor_name] = df["INC_sum"] / (df["INC_sum"] + df["DEC_sum"])
 
-    del df['INC']
-    del df['INC_sum']
-    del df['DEC']
-    del df['DEC_sum']
+    del df["INC"]
+    del df["INC_sum"]
+    del df["DEC"]
+    del df["DEC_sum"]
 
     return df

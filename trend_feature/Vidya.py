@@ -1,4 +1,4 @@
-def signal(*args):
+def signal(df, n, factor_name, config):
     # Note: when using this indicator, n must not exceed half the number of filtered candles (not half the number of fetched candles)
     """
     N=10
@@ -12,25 +12,20 @@ def signal(*args):
     and avoiding excessive trading signals.
     Buy/sell signals are generated when the closing price crosses above/below VIDYA.
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
-    df['abs_diff_close'] = abs(
-        df['close'] - df['close'].shift(1))  # ABS(CLOSE-REF(CLOSE,N))
-    df['abs_diff_close_n'] = abs(
-        df['close'] - df['close'].shift(n))  # ABS(CLOSE-REF(CLOSE,N))
-    df['abs_diff_close_sum'] = df['abs_diff_close'].rolling(
-        n).sum()  # SUM(ABS(CLOSE-REF(CLOSE,1))
+    df["abs_diff_close"] = abs(df["close"] - df["close"].shift(1))  # ABS(CLOSE-REF(CLOSE,N))
+    df["abs_diff_close_n"] = abs(df["close"] - df["close"].shift(n))  # ABS(CLOSE-REF(CLOSE,N))
+    df["abs_diff_close_sum"] = (
+        df["abs_diff_close"].rolling(n, min_periods=config.min_periods).sum()
+    )  # SUM(ABS(CLOSE-REF(CLOSE,1))
     # VI=ABS(CLOSE-REF(CLOSE,N))/SUM(ABS(CLOSE-REF(CLOSE,1)),N)
-    VI = df['abs_diff_close_n'] / df['abs_diff_close_sum']
+    VI = df["abs_diff_close_n"] / df["abs_diff_close_sum"]
     # VIDYA=VI*CLOSE+(1-VI)*REF(CLOSE,1)
-    VIDYA = VI * df['close'] + (1 - VI) * df['close'].shift(1)
+    VIDYA = VI * df["close"] + (1 - VI) * df["close"].shift(1)
     # normalize
-    df[factor_name] = VIDYA / (df['close'].rolling(n, min_periods=1).mean()) - 1
+    df[factor_name] = VIDYA / (df["close"].rolling(n, min_periods=config.min_periods).mean()) - 1
 
-    del df['abs_diff_close']
-    del df['abs_diff_close_n']
-    del df['abs_diff_close_sum']
+    del df["abs_diff_close"]
+    del df["abs_diff_close_n"]
+    del df["abs_diff_close_sum"]
 
     return df

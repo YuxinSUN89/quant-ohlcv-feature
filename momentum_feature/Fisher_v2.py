@@ -1,21 +1,8 @@
 import numpy as np
-import pandas as pd
-
-
-# ===== function: 0-1 normalization
-def scale_01(_s, _n):
-    _s = (pd.Series(_s) - pd.Series(_s).rolling(_n, min_periods=1).min()) / (
-            1e-9 + pd.Series(_s).rolling(_n, min_periods=1).max() - pd.Series(_s).rolling(_n, min_periods=1).min()
-    )
-    return pd.Series(_s)
 
 
 # FISHER_v2
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # FISHER_v2 indicator
     """
     N=20
@@ -31,31 +18,31 @@ def signal(*args):
     The advantage of the Fisher indicator is that it reduces the lag compared to common technical indicators.
     """
     PARAM = 0.5  # 0.33
-    df['price'] = (df['high'] + df['low']) / 2
-    df['min_low'] = df['low'].rolling(n).min()
-    df['max_high'] = df['high'].rolling(n).max()
-    df['price_ch'] = PARAM * 2 * ((df['price'] - df['min_low']) / (df['max_high'] - df['min_low']) - 0.5)
-    df['price_change'] = df['price_ch'] + (1 - PARAM) * df['price_ch'].shift(1)
-    df['price_change'] = np.where(df['price_change'] > 0.99, 0.999, df['price_change'])
-    df['price_change'] = np.where(df['price_change'] < -0.99, -0.999, df['price_change'])
+    df["price"] = (df["high"] + df["low"]) / 2
+    df["min_low"] = df["low"].rolling(n, min_periods=config.min_periods).min()
+    df["max_high"] = df["high"].rolling(n, min_periods=config.min_periods).max()
+    df["price_ch"] = PARAM * 2 * ((df["price"] - df["min_low"]) / (df["max_high"] - df["min_low"]) - 0.5)
+    df["price_change"] = df["price_ch"] + (1 - PARAM) * df["price_ch"].shift(1)
+    df["price_change"] = np.where(df["price_change"] > 0.99, 0.999, df["price_change"])
+    df["price_change"] = np.where(df["price_change"] < -0.99, -0.999, df["price_change"])
 
-    df[factor_name] = 0.3 * df['price_change'] + 0.7 * df['price_change'].shift(1)
+    df[factor_name] = 0.3 * df["price_change"] + 0.7 * df["price_change"].shift(1)
 
     # price = (df['high'] + df['low']) / 2.
-    # low_min = df['low'].rolling(n, min_periods=1).min()
-    # high_max = df['high'].rolling(n, min_periods=1).max()
+    # low_min = df['low'].rolling(n, min_periods=config.min_periods).min()
+    # high_max = df['high'].rolling(n, min_periods=config.min_periods).max()
     # price_ch = 2 * (price - 0.5 - low_min / (1e-9 + high_max - low_min))
     # price_ch = np.where(price_ch > 0.99, 0.99, price_ch)
     # price_ch = np.where(price_ch < -0.99, -0.99, price_ch)
     # price_ch = 0.3 * pd.Series(price_ch) + 0.7 * pd.Series(price_ch).shift(1)
 
     # signal = fisher
-    # df[factor_name] = scale_01(signal, n)
+    # df[factor_name] = scale_01(signal, n, config.normalize_eps, config=config)
 
-    del df['price']
-    del df['min_low']
-    del df['max_high']
-    del df['price_ch']
-    del df['price_change']
+    del df["price"]
+    del df["min_low"]
+    del df["max_high"]
+    del df["price_ch"]
+    del df["price_change"]
 
     return df

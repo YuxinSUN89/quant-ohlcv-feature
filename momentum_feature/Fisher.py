@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def signal(*args):
+def signal(df, n, factor_name, config):
     # FISHER indicator
     """
     N=20
@@ -16,24 +16,20 @@ def signal(*args):
     Fisher Transformation is a method that transforms stock price data to approximate a normal distribution.
     The advantage of the Fisher indicator is that it reduces the lag compared to common technical indicators.
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+    PARAM = 1 / n
+    df["price"] = (df["high"] + df["low"]) / 2
+    df["min_low"] = df["low"].rolling(n, min_periods=config.min_periods).min()
+    df["max_high"] = df["high"].rolling(n, min_periods=config.min_periods).max()
+    df["price_ch"] = 2 * (df["price"] - df["min_low"]) / (df["max_high"] - df["low"]) - 0.5
+    df["price_change"] = PARAM * df["price_ch"] + (1 - PARAM) * df["price_ch"].shift(1)
+    df["price_change"] = np.where(df["price_change"] > 0.99, 0.999, df["price_change"])
+    df["price_change"] = np.where(df["price_change"] < -0.99, -0.999, df["price_change"])
+    df[factor_name] = 0.5 * np.log((1 + df["price_change"]) / (1 - df["price_change"]))
 
-    PARAM = 1/ n
-    df['price'] = (df['high'] + df['low']) / 2
-    df['min_low'] = df['low'].rolling(n).min()
-    df['max_high'] = df['high'].rolling(n).max()
-    df['price_ch'] = 2 * (df['price'] - df['min_low']) / (df['max_high'] - df['low']) - 0.5
-    df['price_change'] = PARAM * df['price_ch'] + (1 - PARAM) * df['price_ch'].shift(1)
-    df['price_change'] = np.where(df['price_change'] > 0.99, 0.999, df['price_change'])
-    df['price_change'] = np.where(df['price_change'] < -0.99, -0.999, df['price_change'])
-    df[factor_name] = 0.5 * np.log((1+df['price_change']) / (1 - df['price_change']))
-
-    del df['price']
-    del df['min_low']
-    del df['max_high']
-    del df['price_ch']
-    del df['price_change']
+    del df["price"]
+    del df["min_low"]
+    del df["max_high"]
+    del df["price_ch"]
+    del df["price_change"]
 
     return df

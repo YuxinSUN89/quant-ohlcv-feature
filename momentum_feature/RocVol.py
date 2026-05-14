@@ -1,7 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+def signal(df, n, factor_name, config):
     # RocVol indicator
     """
     N = 80
@@ -9,6 +6,6 @@ def signal(*args):
     RocVol is the volume version of ROC. Buy when RocVol crosses above 0;
     sell when it crosses below 0.
     """
-    df[factor_name] = df['volume'] / df['volume'].shift(n) - 1
+    df[factor_name] = df["volume"] / df["volume"].shift(n) - 1
 
     return df

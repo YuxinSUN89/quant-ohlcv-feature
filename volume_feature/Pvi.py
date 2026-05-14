@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def signal(*args):
+def signal(df, n, factor_name, config):
     # PVI indicator
     """
     N=40
@@ -15,17 +15,13 @@ def signal(*args):
     A buy signal is generated when PVI crosses above PVI_MA;
     a sell signal is generated when PVI crosses below PVI_MA.
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+    df["ref_close"] = (df["close"] - df["close"].shift(1)) / df["close"]
+    df["PVI_INC"] = np.where(df["volume"] > df["volume"].shift(1), df["ref_close"], 0)
+    df["PVI"] = df["PVI_INC"].cumsum()
+    df[factor_name] = df["PVI"].rolling(n, min_periods=config.min_periods).mean()
 
-    df['ref_close'] = (df['close'] - df['close'].shift(1)) / df['close']
-    df['PVI_INC'] = np.where(df['volume'] > df['volume'].shift(1), df['ref_close'], 0)
-    df['PVI'] = df['PVI_INC'].cumsum()
-    df[factor_name] = df['PVI'].rolling(n, min_periods=1).mean()
-
-    del df['ref_close']
-    del df['PVI_INC']
-    del df['PVI']
+    del df["ref_close"]
+    del df["PVI_INC"]
+    del df["PVI"]
 
     return df

@@ -1,18 +1,7 @@
-import pandas as pd
+from helpers import scale_01
 
 
-def scale_01(_s, _n):
-    _s = (pd.Series(_s) - pd.Series(_s).rolling(_n, min_periods=1).min()) / (
-        1e-9 + pd.Series(_s).rolling(_n, min_periods=1).max() - pd.Series(_s).rolling(_n, min_periods=1).min()
-    )
-    return pd.Series(_s)
-
-
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # ApzLower indicator
     """
     N=10
@@ -27,12 +16,23 @@ def signal(*args):
     deviation of the close, the Keltner Channel uses the true range ATR, and ApzLower uses
     the N-day double exponential average of the high-low difference to measure price amplitude.
     """
-    vol = (df['high'] - df['low']).ewm(span=n, adjust=False, min_periods=1).mean().ewm(
-        span=n, adjust=False, min_periods=1).mean()
-    upper = df['close'].ewm(span=int(2 * n), adjust=False, min_periods=1).mean().ewm(
-        span=int(2 * n), adjust=False, min_periods=1).mean() + 2 * vol
+    vol = (
+        (df["high"] - df["low"])
+        .ewm(span=n, adjust=config.ewm_adjust, min_periods=config.min_periods)
+        .mean()
+        .ewm(span=n, adjust=config.ewm_adjust, min_periods=config.min_periods)
+        .mean()
+    )
+    upper = (
+        df["close"]
+        .ewm(span=int(2 * n), adjust=config.ewm_adjust, min_periods=config.min_periods)
+        .mean()
+        .ewm(span=int(2 * n), adjust=config.ewm_adjust, min_periods=config.min_periods)
+        .mean()
+        + 2 * vol
+    )
 
     s = upper - 4 * vol
-    df[factor_name] = scale_01(s, n)
+    df[factor_name] = scale_01(s, n, config.normalize_eps, config=config)
 
     return df

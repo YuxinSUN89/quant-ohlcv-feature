@@ -1,12 +1,6 @@
-eps = 1e-8
-
-
-def signal(*args):
+def signal(df, n, factor_name, config):
     # Tma2
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-    
+    eps = config.eps
     """
     N=20
     CLOSE_MA=MA(CLOSE,N)
@@ -15,10 +9,10 @@ def signal(*args):
     closer to the current day, TMA gives more weight to prices in the middle of the considered
     time window. Buy/sell signals are generated when price crosses above/below TMA.
     """
-    _ts = df[['high', 'low']].sum(axis=1) / 2
+    _ts = df[["high", "low"]].sum(axis=1) / 2
 
-    close_ma = _ts.rolling(n, min_periods=1).mean()
-    tma = close_ma.rolling(n, min_periods=1).mean()
-    df[factor_name] = df['close'] / (tma+eps) - 1
+    close_ma = _ts.rolling(n, min_periods=config.min_periods).mean()
+    tma = close_ma.rolling(n, min_periods=config.min_periods).mean()
+    df[factor_name] = df["close"] / (tma + eps) - 1
 
     return df

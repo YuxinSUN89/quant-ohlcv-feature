@@ -1,8 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # CMF indicator
     """
     N=60
@@ -13,7 +9,10 @@ def signal(*args):
     If CMF crosses above 0, a buy signal is generated;
     if CMF crosses below 0, a sell signal is generated.
     """
-    A = ((df['close'] - df['low']) - (df['high'] - df['close']) )* df['volume'] / (df['high'] - df['low'])
-    df[factor_name] = A.rolling(n).sum() / df['volume'].rolling(n).sum()
+    A = ((df["close"] - df["low"]) - (df["high"] - df["close"])) * df["volume"] / (df["high"] - df["low"])
+    df[factor_name] = (
+        A.rolling(n, min_periods=config.min_periods).sum()
+        / df["volume"].rolling(n, min_periods=config.min_periods).sum()
+    )
 
     return df

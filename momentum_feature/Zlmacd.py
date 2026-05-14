@@ -1,8 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # ZLMACD indicator
     """
     N1=20
@@ -13,12 +9,12 @@ def signal(*args):
     calculation, overcoming the lag of the MACD indicator. A buy/sell signal is generated
     when ZLMACD crosses above/below 0.
     """
-    ema1 = df['close'].ewm(n, adjust=False).mean()
-    ema_ema_1 = ema1.ewm(n, adjust=False).mean()
+    ema1 = df["close"].ewm(span=n, adjust=config.ewm_adjust).mean()
+    ema_ema_1 = ema1.ewm(span=n, adjust=config.ewm_adjust).mean()
     n2 = 5 * n
-    ema2 = df['close'].ewm(n2, adjust=False).mean()
-    ema_ema_2 = ema2.ewm(n2, adjust=False).mean()
+    ema2 = df["close"].ewm(span=n2, adjust=config.ewm_adjust).mean()
+    ema_ema_2 = ema2.ewm(span=n2, adjust=config.ewm_adjust).mean()
     ZLMACD = (2 * ema1 - ema_ema_1) - (2 * ema2 - ema_ema_2)
-    df[factor_name] = df['close'] / ZLMACD - 1
+    df[factor_name] = df["close"] / ZLMACD - 1
 
     return df

@@ -1,8 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # KDJD indicator
     """
     N=20
@@ -21,13 +17,13 @@ def signal(*args):
     falls between its maximum and minimum values over the past N days. Here it is used as
     a momentum indicator. Buy/sell signals are generated when D crosses above 70 / below 30.
     """
-    min_low = df['low'].rolling(n).min()
-    max_high = df['high'].rolling(n).max()
-    Stochastics = (df['close'] - min_low) / (max_high - min_low) * 100
-    Stochastics_LOW = Stochastics.rolling(n*3).min()
-    Stochastics_HIGH = Stochastics.rolling(n*3).max()
+    min_low = df["low"].rolling(n, min_periods=config.min_periods).min()
+    max_high = df["high"].rolling(n, min_periods=config.min_periods).max()
+    Stochastics = (df["close"] - min_low) / (max_high - min_low) * 100
+    Stochastics_LOW = Stochastics.rolling(n * 3, min_periods=config.min_periods).min()
+    Stochastics_HIGH = Stochastics.rolling(n * 3, min_periods=config.min_periods).max()
     Stochastics_DOUBLE = (Stochastics - Stochastics_LOW) / (Stochastics_HIGH - Stochastics_LOW)
-    df[factor_name] = Stochastics_DOUBLE.ewm(com=2).mean() #K
-    # df[factor_name] = K.ewm(com=2).mean() #D
+    df[factor_name] = Stochastics_DOUBLE.ewm(com=2, adjust=config.ewm_adjust).mean()  # K
+    # df[factor_name] = K.ewm(com=2, adjust=config.ewm_adjust).mean() #D
 
     return df

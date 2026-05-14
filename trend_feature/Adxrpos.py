@@ -2,11 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # Adx indicator
     """
     N1=14
@@ -24,20 +20,19 @@ def signal(*args):
     daily highs and lows to reflect price trend direction. A buy signal is generated when
     Di+ crosses above Di-; a sell signal when Di+ crosses below Di-.
     """
-    max_high = np.where(df['high'] > df['high'].shift(1), df['high'] - df['high'].shift(1), 0)
-    max_low = np.where(df['low'].shift(1) > df['low'], df['low'].shift(1) - df['low'], 0)
+    max_high = np.where(df["high"] > df["high"].shift(1), df["high"] - df["high"].shift(1), 0)
+    max_low = np.where(df["low"].shift(1) > df["low"], df["low"].shift(1) - df["low"], 0)
     xpdm = np.where(pd.Series(max_high) > pd.Series(max_low), pd.Series(max_high) - pd.Series(max_high).shift(1), 0)
     # xndm = np.where(pd.Series(max_low) > pd.Series(max_high), pd.Series(max_low).shift(1) - pd.Series(max_low), 0)
-    tr = np.max(np.array([
-        (df['high'] - df['low']).abs(),
-        (df['high'] - df['close']).abs(),
-        (df['low'] - df['close']).abs()
-    ]), axis=0)  # take the maximum of the three series
-    pdm = pd.Series(xpdm).rolling(n, min_periods=1).sum()
-    # ndm = pd.Series(xndm).rolling(n, min_periods=1).sum()
+    tr = np.max(
+        np.array([(df["high"] - df["low"]).abs(), (df["high"] - df["close"]).abs(), (df["low"] - df["close"]).abs()]),
+        axis=0,
+    )  # take the maximum of the three series
+    pdm = pd.Series(xpdm).rolling(n, min_periods=config.min_periods).sum()
+    # ndm = pd.Series(xndm).rolling(n, min_periods=config.min_periods).sum()
 
-    di_pos = pd.Series(pdm / pd.Series(tr).rolling(n, min_periods=1).sum())
-    # di_neg = pd.Series(ndm / pd.Series(tr).rolling(n, min_periods=1).sum())
+    di_pos = pd.Series(pdm / pd.Series(tr).rolling(n, min_periods=config.min_periods).sum())
+    # di_neg = pd.Series(ndm / pd.Series(tr).rolling(n, min_periods=config.min_periods).sum())
 
     df[factor_name] = 0.5 * pd.Series(di_pos) + 0.5 * pd.Series(di_pos).shift(n)
 

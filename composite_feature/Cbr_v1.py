@@ -1,11 +1,7 @@
 import talib as ta
 
 
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # Cbr_v1 indicator (COPP × BBW × price-volume correlation composite)
     # Formula: RC = 100 * (CLOSE_CHANGE_N/CLOSE_N + CLOSE_CHANGE_2N/CLOSE_2N); COPP = MA(RC, N)
     #          BBW = STD(CLOSE,N) / MA(CLOSE,N); CORR = CORREL(CLOSE, VOLUME, N) + 1
@@ -15,20 +11,23 @@ def signal(*args):
     # and price-volume alignment.
 
     # Copp
-    df['RC'] = 100 * ((df['close'] - df['close'].shift(n)) / df['close'].shift(n) + (df['close'] - df['close'].shift(2 * n)) / df['close'].shift(2 * n))
-    df['RC'] = df['RC'].rolling(n, min_periods=1).mean()
+    df["RC"] = 100 * (
+        (df["close"] - df["close"].shift(n)) / df["close"].shift(n)
+        + (df["close"] - df["close"].shift(2 * n)) / df["close"].shift(2 * n)
+    )
+    df["RC"] = df["RC"].rolling(n, min_periods=config.min_periods).mean()
 
     # bbw
-    df['median'] = df['close'].rolling(n, min_periods=1).mean()
-    df['std'] = df['close'].rolling(n, min_periods=1).std(ddof=0)
-    df['bbw'] = (df['std'] / df['median'])
+    df["median"] = df["close"].rolling(n, min_periods=config.min_periods).mean()
+    df["std"] = df["close"].rolling(n, min_periods=config.min_periods).std(ddof=config.ddof)
+    df["bbw"] = df["std"] / df["median"]
 
     # corr
-    df['corr'] = ta.CORREL(df['close'], df['volume'], n) + 1
-    df['corr'] = df['corr'].rolling(n, min_periods=1).mean()
+    df["corr"] = ta.CORREL(df["close"], df["volume"], n) + 1
+    df["corr"] = df["corr"].rolling(n, min_periods=config.min_periods).mean()
 
-    df[factor_name] = df['RC'] * df['bbw'] * df['corr']
+    df[factor_name] = df["RC"] * df["bbw"] * df["corr"]
 
-    del df['RC'], df['median'],  df['std'], df['bbw'], df['corr']
+    del df["RC"], df["median"], df["std"], df["bbw"], df["corr"]
 
     return df

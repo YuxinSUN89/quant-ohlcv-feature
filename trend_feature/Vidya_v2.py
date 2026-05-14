@@ -1,14 +1,10 @@
 import pandas as pd
 
 
-def signal(*args):
+def signal(df, n, factor_name, config):
     # Vidya_v2
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
-    '''
-    N=10 
+    """
+    N=10
     VI=ABS(CLOSE-REF(CLOSE,N))/SUM(ABS(CLOSE-REF(CLOSE ,1)),N)
     VIDYA=VI*CLOSE+(1-VI)*REF(CLOSE,1)
     VIDYA is a type of moving average, but its weights incorporate the ER
@@ -18,11 +14,11 @@ def signal(*args):
     VIDYA gives less weight to the current price, increasing its lag to make it smoother
     and avoiding excessive trading signals.
     Buy/sell signals are generated when the closing price crosses above/below VIDYA.
-    '''
+    """
 
-    _ts = (df['open'] + df['close']) / 2.
+    _ts = (df["open"] + df["close"]) / 2.0
 
-    _vi = (_ts - _ts.shift(n)).abs() / (_ts - _ts.shift(1)).abs().rolling(n, min_periods=1).sum()
+    _vi = (_ts - _ts.shift(n)).abs() / (_ts - _ts.shift(1)).abs().rolling(n, min_periods=config.min_periods).sum()
     _vidya = _vi * _ts + (1 - _vi) * _ts.shift(1)
 
     df[factor_name] = pd.Series(_vidya)

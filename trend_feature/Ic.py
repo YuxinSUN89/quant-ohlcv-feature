@@ -1,5 +1,5 @@
-def signal(*args):
-    # IC 
+def signal(df, n, factor_name, config):
+    # IC
     """
     N1=9
     N2=26
@@ -18,35 +18,31 @@ def signal(*args):
     buy when price crosses above KS; if price is below the cloud and SPAN_A<SPAN_B,
     sell when price crosses below KS.
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
     n2 = 3 * n
     n3 = 2 * n2
-    df['max_high_1'] = df['high'].rolling(n, min_periods=1).max()
-    df['min_low_1'] = df['low'].rolling(n, min_periods=1).min()
-    df['TS'] = (df['max_high_1'] + df['min_low_1']) / 2
-    df['max_high_2'] = df['high'].rolling(n2, min_periods=1).max()
-    df['min_low_2'] = df['low'].rolling(n2, min_periods=1).min()
-    df['KS'] = (df['max_high_2'] + df['min_low_2']) / 2
-    df['span_A'] = (df['TS'] + df['KS']) / 2
-    df['max_high_3'] = df['high'].rolling(n3, min_periods=1).max()
-    df['min_low_3'] = df['low'].rolling(n3, min_periods=1).min()
-    df['span_B'] = (df['max_high_3'] + df['min_low_3']) / 2
+    df["max_high_1"] = df["high"].rolling(n, min_periods=config.min_periods).max()
+    df["min_low_1"] = df["low"].rolling(n, min_periods=config.min_periods).min()
+    df["TS"] = (df["max_high_1"] + df["min_low_1"]) / 2
+    df["max_high_2"] = df["high"].rolling(n2, min_periods=config.min_periods).max()
+    df["min_low_2"] = df["low"].rolling(n2, min_periods=config.min_periods).min()
+    df["KS"] = (df["max_high_2"] + df["min_low_2"]) / 2
+    df["span_A"] = (df["TS"] + df["KS"]) / 2
+    df["max_high_3"] = df["high"].rolling(n3, min_periods=config.min_periods).max()
+    df["min_low_3"] = df["low"].rolling(n3, min_periods=config.min_periods).min()
+    df["span_B"] = (df["max_high_3"] + df["min_low_3"]) / 2
 
     # normalize/remove dimensionality
-    df[factor_name] = df['span_A'] / df['span_B']
+    df[factor_name] = df["span_A"] / df["span_B"]
 
-    del df['max_high_1']
-    del df['max_high_2']
-    del df['max_high_3']
-    del df['min_low_1']
-    del df['min_low_2']
-    del df['min_low_3']
-    del df['TS']
-    del df['KS']
-    del df['span_A']
-    del df['span_B']
+    del df["max_high_1"]
+    del df["max_high_2"]
+    del df["max_high_3"]
+    del df["min_low_1"]
+    del df["min_low_2"]
+    del df["min_low_3"]
+    del df["TS"]
+    del df["KS"]
+    del df["span_A"]
+    del df["span_B"]
 
     return df

@@ -1,18 +1,7 @@
-import pandas as pd
+from helpers import scale_01
 
 
-# ===== Function: 0-1 normalization
-def scale_01(_s, _n):
-    _s = (pd.Series(_s) - pd.Series(_s).rolling(_n, min_periods=1).min()) / (
-        1e-9 + pd.Series(_s).rolling(_n, min_periods=1).max() - pd.Series(_s).rolling(_n, min_periods=1).min()
-    )
-    return pd.Series(_s)
-
-
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+def signal(df, n, factor_name, config):
     # ******************** smi ********************
     # --- SMI --- 073/125
     # N1=20
@@ -29,18 +18,24 @@ def signal(*args):
     # measures the distance between today's closing price and the midpoint of those extremes.
     # Buy/sell signals are generated when SMI crosses above/below its moving average.
 
-    m = 0.5 * df['high'].rolling(n, min_periods=1).max() + 0.5 * df['low'].rolling(n, min_periods=1).min()
-    d = df['close'] - m
-    ds = d.ewm(span=n, adjust=False, min_periods=1).mean()
-    ds = ds.ewm(span=n, adjust=False, min_periods=1).mean()
+    m = (
+        0.5 * df["high"].rolling(n, min_periods=config.min_periods).max()
+        + 0.5 * df["low"].rolling(n, min_periods=config.min_periods).min()
+    )
+    d = df["close"] - m
+    ds = d.ewm(span=n, adjust=config.ewm_adjust, min_periods=config.min_periods).mean()
+    ds = ds.ewm(span=n, adjust=config.ewm_adjust, min_periods=config.min_periods).mean()
 
-    dhl = df['high'].rolling(n, min_periods=1).max() - df['low'].rolling(n, min_periods=1).min()
-    dhl = dhl.ewm(span=n, adjust=False, min_periods=1).mean()
-    dhl = dhl.ewm(span=n, adjust=False, min_periods=1).mean()
+    dhl = (
+        df["high"].rolling(n, min_periods=config.min_periods).max()
+        - df["low"].rolling(n, min_periods=config.min_periods).min()
+    )
+    dhl = dhl.ewm(span=n, adjust=config.ewm_adjust, min_periods=config.min_periods).mean()
+    dhl = dhl.ewm(span=n, adjust=config.ewm_adjust, min_periods=config.min_periods).mean()
 
     smi = 100 * ds / dhl
 
-    s = smi.rolling(n, min_periods=1).mean()
-    df[factor_name] = scale_01(s, n)
+    s = smi.rolling(n, min_periods=config.min_periods).mean()
+    df[factor_name] = scale_01(s, n, config.normalize_eps, config=config)
 
     return df

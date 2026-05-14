@@ -1,4 +1,4 @@
-def signal(*args):
+def signal(df, n, factor_name, config):
     # RCCD indicator
     """
     M=40
@@ -14,21 +14,17 @@ def signal(*args):
     then takes the difference between moving averages of different time lengths, then takes another
     moving average. Buy/sell signals are generated when RCCD crosses above/below 0.
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+    df["RC"] = df["close"] / df["close"].shift(2 * n)
+    df["ARC1"] = df["RC"].rolling(2 * n, min_periods=config.min_periods).mean()
+    df["MA1"] = df["ARC1"].shift(1).rolling(n, min_periods=config.min_periods).mean()
+    df["MA2"] = df["ARC1"].shift(1).rolling(2 * n, min_periods=config.min_periods).mean()
+    df["DIF"] = df["MA1"] - df["MA2"]
+    df[factor_name] = df["DIF"].rolling(2 * n, min_periods=config.min_periods).mean()
 
-    df['RC'] = df['close'] / df['close'].shift(2 * n)
-    df['ARC1'] = df['RC'].rolling(2 * n, min_periods=1).mean()
-    df['MA1'] = df['ARC1'].shift(1).rolling(n, min_periods=1).mean()
-    df['MA2'] = df['ARC1'].shift(1).rolling(2 * n, min_periods=1).mean()
-    df['DIF'] = df['MA1'] - df['MA2']
-    df[factor_name] = df['DIF'].rolling(2 * n, min_periods=1).mean()
-
-    del df['RC']
-    del df['ARC1']
-    del df['MA1']
-    del df['MA2']
-    del df['DIF']
+    del df["RC"]
+    del df["ARC1"]
+    del df["MA1"]
+    del df["MA2"]
+    del df["DIF"]
 
     return df

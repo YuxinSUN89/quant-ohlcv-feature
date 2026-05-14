@@ -1,8 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # Ppo_v1 indicator (PPO v1 — product of relative EMA changes)
     # Formula: EMA1 = EMA(CLOSE, N); EMA2 = EMA(CLOSE, 2N)
     #          PPO = (EMA1/REF(EMA1,N)-1) * |EMA2/REF(EMA2,2N)-1|; result = EMA(PPO, N)
@@ -10,14 +6,14 @@ def signal(*args):
     # Higher values indicate both short and long EMAs are accelerating upward.
     N1 = n
     N2 = 2 * n
-    df['ema_1'] = df['close'].ewm(N1, adjust=False).mean()  # EMA(CLOSE,N1)
-    df['ema_2'] = df['close'].ewm(N2, adjust=False).mean()  # EMA(CLOSE,N2)
-    df['PPO'] = (df['ema_1'] / df['ema_1'].shift(N1) - 1) * abs(df['ema_2'] / df['ema_2'].shift(N2) - 1)
+    df["ema_1"] = df["close"].ewm(span=N1, adjust=config.ewm_adjust).mean()  # EMA(CLOSE,N1)
+    df["ema_2"] = df["close"].ewm(span=N2, adjust=config.ewm_adjust).mean()  # EMA(CLOSE,N2)
+    df["PPO"] = (df["ema_1"] / df["ema_1"].shift(N1) - 1) * abs(df["ema_2"] / df["ema_2"].shift(N2) - 1)
 
-    df[factor_name] = df['PPO'].ewm(N1, adjust=False).mean()  
+    df[factor_name] = df["PPO"].ewm(span=N1, adjust=config.ewm_adjust).mean()
 
-    del df['ema_1']
-    del df['ema_2']
-    del df['PPO']
+    del df["ema_1"]
+    del df["ema_2"]
+    del df["PPO"]
 
     return df

@@ -1,19 +1,10 @@
 import numpy as np
 import pandas as pd
 
-
-def scale_01(_s, _n):
-    _s = (pd.Series(_s) - pd.Series(_s).rolling(_n, min_periods=1).min()) / (
-        1e-9 + pd.Series(_s).rolling(_n, min_periods=1).max() - pd.Series(_s).rolling(_n, min_periods=1).min()
-    )
-    return pd.Series(_s)
+from helpers import scale_01
 
 
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
     # Adx indicator
     """
     N1=14
@@ -31,22 +22,23 @@ def signal(*args):
     daily highs and lows to reflect price trend direction. A buy signal is generated when
     Di+ crosses above Di-; a sell signal when Di+ crosses below Di-.
     """
-    max_high = np.where(df['high'] > df['high'].shift(1), df['high'] - df['high'].shift(1), 0)
-    max_low = np.where(df['low'].shift(1) > df['low'], df['low'].shift(1) - df['low'], 0)
+    max_high = np.where(df["high"] > df["high"].shift(1), df["high"] - df["high"].shift(1), 0)
+    max_low = np.where(df["low"].shift(1) > df["low"], df["low"].shift(1) - df["low"], 0)
     # xpdm = np.where(pd.Series(max_high) > pd.Series(max_low), pd.Series(max_high) - pd.Series(max_high).shift(1), 0)
-    xndm = np.where(pd.Series(max_low) > pd.Series(max_high), pd.Series(max_low).shift(1) - pd.Series(max_low), 0)
-    tr = np.max(np.array([
-        (df['high'] - df['low']).abs(),
-        (df['high'] - df['close']).abs(),
-        (df['low'] - df['close']).abs()
-    ]), axis=0)  # take the maximum of the three series
-    # pdm = pd.Series(xpdm).rolling(n, min_periods=1).sum()
-    ndm = pd.Series(xndm).rolling(n, min_periods=1).sum()
+    # tol=1e-9: guard against CSV float-parsing ULP differences causing boundary condition flips
+    tol = 1e-9
+    xndm = np.where(max_low > max_high + tol, pd.Series(max_low).shift(1) - pd.Series(max_low), 0)
+    tr = np.max(
+        np.array([(df["high"] - df["low"]).abs(), (df["high"] - df["close"]).abs(), (df["low"] - df["close"]).abs()]),
+        axis=0,
+    )  # take the maximum of the three series
+    # pdm = pd.Series(xpdm).rolling(n, min_periods=config.min_periods).sum()
+    ndm = pd.Series(xndm).rolling(n, min_periods=config.min_periods).sum()
 
-    # di_pos = pd.Series(pdm / pd.Series(tr).rolling(n, min_periods=1).sum())
-    di_neg = pd.Series(ndm / pd.Series(tr).rolling(n, min_periods=1).sum())
+    # di_pos = pd.Series(pdm / pd.Series(tr).rolling(n, min_periods=config.min_periods).sum())
+    di_neg = pd.Series(ndm / pd.Series(tr).rolling(n, min_periods=config.min_periods).sum())
 
     signal = 0.5 * pd.Series(di_neg) + 0.5 * pd.Series(di_neg).shift(n)
-    df[factor_name] = scale_01(signal, n)
+    df[factor_name] = scale_01(signal, n, config.normalize_eps, config=config)
 
     return df

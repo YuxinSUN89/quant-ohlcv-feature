@@ -1,4 +1,4 @@
-def signal(*args):
+def signal(df, n, factor_name, config):
     # POS indicator
     """
     N=100
@@ -9,14 +9,10 @@ def signal(*args):
     a sell signal is generated when POS crosses below 20.
 
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
-    ref = df['close'].shift(n)
-    price = (df['close'] - ref) / ref
-    min_price = price.rolling(n).min()
-    max_price = price.rolling(n).max()
+    ref = df["close"].shift(n)
+    price = (df["close"] - ref) / ref
+    min_price = price.rolling(n, min_periods=config.min_periods).min()
+    max_price = price.rolling(n, min_periods=config.min_periods).max()
     df[factor_name] = (price - min_price) / (max_price - min_price)
 
     return df

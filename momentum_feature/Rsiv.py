@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def signal(*args):
+def signal(df, n, factor_name, config):
     # RSIV indicator
     """
     N=20
@@ -14,19 +14,15 @@ def signal(*args):
     with volume VOLUME. Usage is similar to RSI. Here we use it as a momentum indicator;
     buy when it crosses above 60, sell when it crosses below 40.
     """
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+    df["VOLUP"] = np.where(df["close"] > df["close"].shift(1), df["volume"], 0)
+    df["VOLDOWN"] = np.where(df["close"] < df["close"].shift(1), df["volume"], 0)
+    df["SUMUP"] = df["VOLUP"].rolling(n, min_periods=config.min_periods).sum()
+    df["SUMDOWN"] = df["VOLDOWN"].rolling(n, min_periods=config.min_periods).sum()
+    df[factor_name] = df["SUMUP"] / (df["SUMUP"] + df["SUMDOWN"]) * 100
 
-    df['VOLUP'] = np.where(df['close'] > df['close'].shift(1), df['volume'], 0)
-    df['VOLDOWN'] = np.where(df['close'] < df['close'].shift(1), df['volume'], 0)
-    df['SUMUP'] = df['VOLUP'].rolling(n).sum()
-    df['SUMDOWN'] = df['VOLDOWN'].rolling(n).sum()
-    df[factor_name] = df['SUMUP'] / (df['SUMUP'] + df['SUMDOWN']) * 100
-
-    del df['VOLUP']
-    del df['VOLDOWN']
-    del df['SUMUP']
-    del df['SUMDOWN']
+    del df["VOLUP"]
+    del df["VOLDOWN"]
+    del df["SUMUP"]
+    del df["SUMDOWN"]
 
     return df

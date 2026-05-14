@@ -2,10 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+def signal(df, n, factor_name, config):
     # RSIS indicator
     """
     N=120
@@ -22,12 +19,12 @@ def signal(*args):
     A buy signal is generated when RSISMA crosses above 40;
     a sell signal is generated when RSISMA crosses below 60.
     """
-    close_diff_pos = np.where(df['close'] > df['close'].shift(1), df['close'] - df['close'].shift(1), 0)
-    rsi_a = pd.Series(close_diff_pos).ewm(alpha=1/(4*n), adjust=False).mean()
-    rsi_b = (df['close'] - df['close'].shift(1)).abs().ewm(alpha=1/(4*n), adjust=False).mean()
-    rsi = 100 * rsi_a / (1e-9 + rsi_b)
-    rsi_min = pd.Series(rsi).rolling(int(4*n), min_periods=1).min()
-    rsi_max = pd.Series(rsi).rolling(int(4 * n), min_periods=1).max()
-    df[factor_name] = 100 * (rsi - rsi_min) / (1e-9 + rsi_max - rsi_min)
+    close_diff_pos = np.where(df["close"] > df["close"].shift(1), df["close"] - df["close"].shift(1), 0)
+    rsi_a = pd.Series(close_diff_pos).ewm(alpha=1 / (4 * n), adjust=config.ewm_adjust).mean()
+    rsi_b = (df["close"] - df["close"].shift(1)).abs().ewm(alpha=1 / (4 * n), adjust=config.ewm_adjust).mean()
+    rsi = 100 * rsi_a / (config.normalize_eps + rsi_b)
+    rsi_min = pd.Series(rsi).rolling(int(4 * n), min_periods=config.min_periods).min()
+    rsi_max = pd.Series(rsi).rolling(int(4 * n), min_periods=config.min_periods).max()
+    df[factor_name] = 100 * (rsi - rsi_min) / (config.normalize_eps + rsi_max - rsi_min)
 
     return df

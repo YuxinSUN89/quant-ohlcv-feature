@@ -1,7 +1,4 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
+def signal(df, n, factor_name, config):
     # Vao_v2 indicator (Volume Analysis Oscillator v2)
     # Formula: WV = VOLUME * (CLOSE - 0.5*HIGH - 0.5*LOW); VAO = WV + REF(WV, 1)
     #          VAO_MA1 = MA(VAO, N); VAO_MA2 = MA(VAO, 3N)
@@ -10,9 +7,9 @@ def signal(*args):
     # A positive WV (close above midpoint) indicates buying pressure; negative indicates selling pressure.
     # The crossover of short and long VAO MAs generates trend signals.
     df["WV"] = df["volume"] * (df["close"] - 0.5 * df["high"] - 0.5 * df["low"])
-    df["VAO"] = df["WV"]+df["WV"].shift(1)
-    df["VAO_MA1"] = df["VAO"].rolling(n, min_periods=1).mean()
-    df["VAO_MA2"] = df["VAO"].rolling(3 * n, min_periods=1).mean()
+    df["VAO"] = df["WV"] + df["WV"].shift(1)
+    df["VAO_MA1"] = df["VAO"].rolling(n, min_periods=config.min_periods).mean()
+    df["VAO_MA2"] = df["VAO"].rolling(3 * n, min_periods=config.min_periods).mean()
     df["Vao_v2"] = df["VAO_MA1"] - df["VAO_MA2"]
 
     # normalize

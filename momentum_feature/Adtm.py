@@ -1,8 +1,5 @@
-def signal(*args):
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+def signal(df, n, factor_name, config):
+    eps = config.eps
     # ADTM indicator
     """
     N=20
@@ -20,29 +17,29 @@ def signal(*args):
     a sell signal is generated when ADTM crosses below -0.5.
 
     """
-    df['h_o'] = df['high'] - df['open']
-    df['diff_open'] = df['open'] - df['open'].shift(1)
-    max_value1 = df[['h_o', 'diff_open']].max(axis=1)
-    df.loc[df['open'] > df['open'].shift(1), 'DTM'] = max_value1
-    df['DTM'].fillna(value=0, inplace=True)
+    df["h_o"] = df["high"] - df["open"]
+    df["diff_open"] = df["open"] - df["open"].shift(1)
+    max_value1 = df[["h_o", "diff_open"]].max(axis=1)
+    df.loc[df["open"] > df["open"].shift(1), "DTM"] = max_value1
+    df["DTM"] = df["DTM"].fillna(0)
 
-    df['o_l'] = df['open'] - df['low']
-    max_value2 = df[['o_l', 'diff_open']].max(axis=1)
+    df["o_l"] = df["open"] - df["low"]
+    max_value2 = df[["o_l", "diff_open"]].max(axis=1)
     # DBM = pd.where(df['open'] < df['open'].shift(1), max_value2, 0)
-    df.loc[df['open'] < df['open'].shift(1), 'DBM'] = max_value2
-    df['DBM'].fillna(value=0, inplace=True)
+    df.loc[df["open"] < df["open"].shift(1), "DBM"] = max_value2
+    df["DBM"] = df["DBM"].fillna(0)
 
-    df['STM'] = df['DTM'].rolling(n).sum()
-    df['SBM'] = df['DBM'].rolling(n).sum()
-    max_value3 = df[['STM', 'SBM']].max(axis=1)
-    df[factor_name] = (df['STM'] - df['SBM']) / max_value3
+    df["STM"] = df["DTM"].rolling(n, min_periods=config.min_periods).sum()
+    df["SBM"] = df["DBM"].rolling(n, min_periods=config.min_periods).sum()
+    max_value3 = df[["STM", "SBM"]].max(axis=1)
+    df[factor_name] = (df["STM"] - df["SBM"]) / (max_value3 + eps)
 
-    del df['h_o']
-    del df['diff_open']
-    del df['o_l']
-    del df['STM']
-    del df['SBM']
-    del df['DBM']
-    del df['DTM']
+    del df["h_o"]
+    del df["diff_open"]
+    del df["o_l"]
+    del df["STM"]
+    del df["SBM"]
+    del df["DBM"]
+    del df["DTM"]
 
     return df

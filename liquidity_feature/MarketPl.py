@@ -1,22 +1,16 @@
-eps = 1e-8
-
-
-def signal(*args):
+def signal(df, n, factor_name, config):
     # MarketPl indicator
-    df = args[0]
-    n = args[1]
-    factor_name = args[2]
-
+    eps = config.eps
     # MarketPl indicator (Market Placement / Average Holding Cost)
     # Formula: AVG_COST = EMA(QUOTE_VOLUME, N) / EMA(VOLUME, N); result = CLOSE / AVG_COST - 1
     # Computes EMA-weighted average holding cost (VWAP-like using EMA smoothing),
     # then measures how far the current close is above or below this cost.
     # Positive values suggest the current price is above average holding cost (profitable for holders).
-    quote_volume_ema = df['quote_volume'].ewm(span=n, adjust=False).mean()
-    volume_ema = df['volume'].ewm(span=n, adjust=False).mean()
-    df['avg_holding_cost'] = quote_volume_ema / volume_ema
-    df[factor_name] = df['close'] / (df['avg_holding_cost'] + eps) - 1
+    quote_volume_ema = df["quote_volume"].ewm(span=n, adjust=config.ewm_adjust).mean()
+    volume_ema = df["volume"].ewm(span=n, adjust=config.ewm_adjust).mean()
+    df["avg_holding_cost"] = quote_volume_ema / volume_ema
+    df[factor_name] = df["close"] / (df["avg_holding_cost"] + eps) - 1
 
-    del df['avg_holding_cost']
+    del df["avg_holding_cost"]
 
     return df
