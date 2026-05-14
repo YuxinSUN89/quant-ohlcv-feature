@@ -1,0 +1,21 @@
+import polars as pl
+
+
+def signal(df, n, factor_name, config):
+    eps = config.eps
+    # Dc indicator
+    """
+    N=20
+    UPPER=MAX(HIGH,N)
+    LOWER=MIN(LOW,N)
+    MIDDLE=(UPPER+LOWER)/2
+    The Dc indicator uses the N-period highest price and N-period lowest price to construct upper and lower price channels,
+    then takes their average as the middle channel. A buy/sell signal is generated when the close price crosses above/below the middle channel.
+    """
+    upper = df["high"].rolling_max(n, min_samples=config.min_periods)
+    lower = df["low"].rolling_min(n, min_samples=config.min_periods)
+    middle = (upper + lower) / 2
+    # normalize (remove units)
+    df = df.with_columns(pl.Series(factor_name, (df["close"] - middle) / (middle + eps)))
+
+    return df

@@ -1,5 +1,0 @@
-numpy
-pandas
-TA-Lib
-scikit-learn
-numba
