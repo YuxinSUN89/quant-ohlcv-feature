@@ -1,0 +1,79 @@
+"""
+邢不行™️选股框架
+Python股票量化投资课程
+
+版权所有 ©️ 邢不行
+微信: xbx8662
+
+未经授权，不得复制、修改、或使用本代码的全部或部分内容。仅限个人学习用途，禁止商业用途。
+
+Author: 邢不行
+"""
+import pandas as pd
+import numpy as np
+from numba.core.ir import Raise
+
+fin_cols = []  # 财务因子列
+
+
+def add_factor(df: pd.DataFrame, param=None, **kwargs) -> pd.DataFrame:
+    """
+    计算并将新的因子列添加到股票行情数据中，并返回包含计算因子的DataFrame及其聚合方式。
+
+    工作流程：
+    1. 根据提供的参数计算股票的因子值。
+    2. 将因子值添加到原始行情数据DataFrame中。
+
+    :param df: pd.DataFrame，包含单只股票的K线数据，必须包括市场数据（如收盘价等）。
+    :param param: 因子计算所需的参数，格式和含义根据因子类型的不同而有所不同。
+    :param kwargs: 其他关键字参数，包括：
+        - col_name: 新计算的因子列名。
+        - fin_data: 财务数据字典，格式为 {'财务数据': fin_df, '原始财务数据': raw_fin_df}，其中fin_df为处理后的财务数据，raw_fin_df为原始数据，后者可用于某些因子的自定义计算。
+        - 其他参数：根据具体需求传入的其他因子参数。
+    :return:
+        - pd.DataFrame: 包含新计算的因子列，与输入的df具有相同的索引。
+
+    注意事项：
+    - 如果因子的计算涉及财务数据，可以通过`fin_data`参数提供相关数据。
+    """
+
+    """    
+    ----->>>  配置方法  <<<-----
+    配置：('AncReverse叠波', is_sort_asc, [n, m], arg)
+    含义：n日累计涨跌幅 = 前收盘价.pct_change(n) , high = MAX(收盘价, m), low = MIN(收盘价, m)
+        如果 n日累计涨跌幅<0，AncReverse = 收盘价 / high -1; 其余情况AncReverse = 收盘价 / low -1, 其中 n <= m
+        AncReverse叠波 = AncReverse * STD(收盘价.pct_change(m), m)
+    示例：'factor_list': [
+                            ('AncReverse叠波', True, [20, 30], 1),         # AncReverse叠波_20_30
+                        ]
+    """
+    # 从kwargs中提取因子列的名称
+    col_name = kwargs['col_name']
+    n = int(param[0])
+    m = int(param[1])
+
+    # 核心计算逻辑
+    # 计算累计涨跌幅
+    df[f'{n}日累计涨跌幅'] = df['前收盘价'].pct_change(n)
+
+    # 计算高点和低点
+    df[f'high_{m}'] = df['收盘价_复权'].rolling(window=m).max()
+    df[f'low_{m}'] = df['收盘价_复权'].rolling(window=m).min()
+
+    # 计算两种锚定反转因子
+    if n > m:
+        raise ValueError(f"无效的param参数: param[0]必须小于等于param[1]，现在填写的param[0]为{n}，param[1]为{m}。")
+    elif n <= m:
+        # 锚定反转因子（基于短期均线）
+        df[f'AncReverse_{n}_{m}'] = np.where(
+            df[f'{n}日累计涨跌幅'] < 0,
+            df['收盘价_复权'] / df[f'high_{m}'] - 1,
+            df['收盘价_复权'] / df[f'low_{m}'] - 1
+        )
+        df[f'AncReverse_{n}_{m}_叠加收益波动率{m}'] = df[f'AncReverse_{n}_{m}'] * (df['收盘价_复权'].pct_change().rolling(m).std())
+    factor_col = df[f'AncReverse_{n}_{m}_叠加收益波动率{m}']
+
+    # 创建包含指定因子的DataFrame
+    factor_df = pd.DataFrame({col_name: factor_col}, index=df.index)
+
+    return factor_df
