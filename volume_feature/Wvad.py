@@ -17,11 +17,12 @@ def signal(*args):
     n = args[1]
     factor_name = args[2]
 
-    df['VAD'] = (df['close'] - df['open']) / (df['high'] - df['low']) * df['volume']
+    eps = 1e-8
+    df['VAD'] = (df['close'] - df['open']) / (df['high'] - df['low'] + eps) * df['volume']
     df['WVAD'] = df['VAD'].rolling(n).sum()
 
     # normalize
-    df[factor_name] = (df['WVAD'] - df['WVAD'].rolling(n).min()) / (df['WVAD'].rolling(n).max() - df['WVAD'].rolling(n).min())
+    df[factor_name] = (df['WVAD'] - df['WVAD'].rolling(n).min()) / (df['WVAD'].rolling(n).max() - df['WVAD'].rolling(n).min() + eps)
 
     del df['VAD']
     del df['WVAD']

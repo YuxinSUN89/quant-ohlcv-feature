@@ -27,4 +27,8 @@ def signal(*args):
     s = RSI.ewm(span=n, adjust=False, min_periods=1).mean()
     df[factor_name] = pd.Series(s)
 
+    del df['_fi']
+    del df['up']
+    del df['down']
+
     return df

@@ -23,4 +23,9 @@ def signal(*args):
     # normalize
     df[factor_name] = df['PVT'] / df['Pvt_v2'] - 1
 
+    del df['PVT']
+    del df['PVT_MA1']
+    del df['PVT_MA2']
+    del df['Pvt_v2']
+
     return df

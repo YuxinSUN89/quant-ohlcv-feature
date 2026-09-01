@@ -13,4 +13,9 @@ def signal(*args):
     df['cm'] = df['close'] / df['ma']
     df[factor_name] = (df['mtm_mean'] - df['cm']) / df['cm']
 
+    del df['mtm']
+    del df['mtm_mean']
+    del df['ma']
+    del df['cm']
+
     return df

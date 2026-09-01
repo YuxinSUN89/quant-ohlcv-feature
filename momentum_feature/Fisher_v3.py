@@ -43,16 +43,10 @@ def signal(*args):
     df[factor_name] = 0.5 * df['price_change'].shift(1) + 0.5 * np.log(
         ((1 + df['price_change']) / (1 - df['price_change'])))
 
-    # price = (df['high'] + df['low']) / 2.
-    # low_min = df['low'].rolling(n, min_periods=1).min()
-    # high_max = df['high'].rolling(n, min_periods=1).max()
-    # price_ch = 2 * (price - 0.5 - low_min / (high_max - low_min))
-    # price_ch = np.where(price_ch > 0.99, 0.99, price_ch)
-    # price_ch = np.where(price_ch < -0.99, -0.99, price_ch)
-    # price_ch = 0.3 * pd.Series(price_ch) + 0.7 * pd.Series(price_ch).shift(1)
-    # fisher = 0.5 * pd.Series(price_ch).shift(1) + 0.5 * pd.Series(np.log((1 + price_ch) / (1 - price_ch)))
-    #
-    # signal = fisher
-    # df[factor_name] = scale_01(signal, n)
+    del df['price']
+    del df['min_low']
+    del df['max_high']
+    del df['price_ch']
+    del df['price_change']
 
     return df

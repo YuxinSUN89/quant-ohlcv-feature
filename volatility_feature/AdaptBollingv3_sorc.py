@@ -63,7 +63,7 @@ def signal(*args):
     drop_col = [
         'c1', 'c2', 'c3', 'tr', 'atr', 'wd_atr', 'mtm_l',
         'mtm_h', 'mtm_c', 'mtm_c1', 'mtm_c2', 'mtm_c3', 'mtm_tr', 'mtm_atr',
-        'mtm_l_mean', 'mtm_h_mean', 'mtm_c_mean', 'mtm_atr_mean', 'avg_price_'
+        'mtm_l_mean', 'mtm_h_mean', 'mtm_c_mean', 'mtm_atr_mean', 'avg_price_', 'sorc'
     ]
     df.drop(columns=drop_col, inplace=True)
 

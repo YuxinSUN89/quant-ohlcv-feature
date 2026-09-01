@@ -13,4 +13,6 @@ def signal(*args):
     df['mtm'] = df['close'] / df['close'].shift(n) - 1
     df[factor_name] = ta.LINEARREG(df['mtm'], timeperiod=n)
 
+    del df['mtm']
+
     return df

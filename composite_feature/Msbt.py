@@ -31,4 +31,12 @@ def signal(*args):
 
     df[factor_name] = df['mtm'] * df['s_mtm'] * df['bbw_mean'] * df['volatility']
 
+    del df['ma']
+    del df['std']
+    del df['mtm']
+    del df['s_mtm']
+    del df['bbw']
+    del df['bbw_mean']
+    del df['volatility']
+
     return df

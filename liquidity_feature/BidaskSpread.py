@@ -188,4 +188,6 @@ def signal(*args):
     # Smooth the spread estimate over the requested window.
     df[factor_name] = df['bidask'].rolling(window=n, min_periods=1).mean()
 
+    del df['bidask']
+
     return df

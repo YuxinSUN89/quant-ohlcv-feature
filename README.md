@@ -1,6 +1,6 @@
 # quant-ohlcv-features
 
-A modular library of **335+ technical indicator implementations** for quantitative feature engineering on OHLCV (Open, High, Low, Close, Volume) financial data. Designed for use in machine learning pipelines for cryptocurrency and equity markets.
+A modular library of **540+ technical indicator implementations** for quantitative feature engineering on OHLCV (Open, High, Low, Close, Volume) financial data. Designed for use in machine learning pipelines for cryptocurrency and equity markets.
 
 ---
 
@@ -10,12 +10,12 @@ Each feature is implemented as a standalone Python function that accepts a panda
 
 | Category | Files | Description |
 |---|---|---|
-| `momentum_feature/` | 121 | Rate of change, oscillators, divergence signals |
-| `trend_feature/` | 67 | Moving averages, directional indicators, regression trends |
-| `volatility_feature/` | 72 | Bands, channels, range-based uncertainty metrics |
-| `volume_feature/` | 51 | Accumulation, flow, buying/selling pressure |
-| `price_feature/` | 9 | VWAP, typical price, weighted close |
-| `liquidity_feature/` | 4 | Market microstructure and illiquidity proxies |
+| `momentum_feature/` | 240 | Rate of change, oscillators, divergence signals |
+| `trend_feature/` | 73 | Moving averages, directional indicators, regression trends |
+| `volatility_feature/` | 107 | Bands, channels, range-based uncertainty metrics |
+| `volume_feature/` | 82 | Accumulation, flow, buying/selling pressure |
+| `price_feature/` | 19 | VWAP, typical price, weighted close |
+| `liquidity_feature/` | 8 | Market microstructure and illiquidity proxies |
 | `composite_feature/` | 11 | Multi-factor combinations across categories |
 
 ---
@@ -84,6 +84,7 @@ Key indicators:
 - **MTM** (`Mtm.py`, `MtmMax.py`, `MtmMean.py`, `MtmBull.py`, `MtmBear.py`) — Momentum aggregates
 - **DBCD** (`Dbcd.py`, `Dbcd_v2.py`, `Dbcd_taker.py`) — Divergence-based momentum
 - **Other** — CMO, Fisher Transform, KST, DPO, Coppock Curve
+- **Recently added** — MA-deviation oscillators (`G31.py`, `G34.py`, `G65.py`, `G66.py`, `G71.py`), anchored-reversal factors (`AncRet.py`, `AncReverse.py`), win-rate / Sharpe-style return stats (`WinRate.py`, `Sharpe.py`), and ~100 more numbered alpha-style oscillators (`G*.py`, `H*.py`) ported from a broader factor reference and restricted to pure OHLCV formulas
 
 ---
 
@@ -99,6 +100,7 @@ Key indicators:
 - **Ichimoku** (`Ic.py`, `Ic_v2.py`, `Ic_v3.py`, `Ic_v4.py`) — Cloud indicator components
 - **Signals** (`MaSignal.py`, `HmaSignal.py`) — Trend confirmation signals
 - **Other** — Aroon, BBI, MAC, Gapped trend, CSE
+- **Recently added** — DI-ratio directional-movement factors (`G172.py`, `G173.py`), regression-slope of a smoothed MA (`G21.py`), bottom-fractal pattern (`BottomFractal.py`), control-dominance factor (`StableControlPower.py`)
 
 ---
 
@@ -116,6 +118,7 @@ Key indicators:
 - **PAC** (`Pac.py`, `PacUpper.py`, `PacLower.py`) — Price Acceleration Channel
 - **Envelope** (`EnvUpper.py`, `EnvLower.py`, `EnvSignal.py`) — Percentage-based envelope
 - **Other** — VIX-inspired bandwidth, PFE, MSSI, historical volatility, volume/change standard deviation
+- **Recently added** — amplitude family (`Amplitude.py`, `AmplitudeBear.py`, `AmplitudeBull.py`, `AmplitudeStd.py`), candle-shadow ratios (`UpperShadow.py`, `LowerShadow.py`), gap standard deviation (`GapStdN.py`), plus ~20 more true-range / rolling-std alpha factors (`G*.py`, `H101.py`)
 
 ---
 
@@ -133,6 +136,7 @@ Key indicators:
 - **WAD / WVAD** (`Wad.py`, `Wvad.py`) — Williams Accumulation/Distribution
 - **V1 variants** (`V1.py`, `V1Up.py`, `V1Dn.py`) — Directional volume components
 - **Fancy features** (`BuyVolRatio_fancy.py`, `NetVol_fancy.py`, `UpNum_fancy.py`, `VolPerTrade_fancy.py`)
+- **Recently added** — volume-ratio family (`VolRatio.py`, `UpVolRatio.py`, `DownVolRatio.py`, `VolumeAvgRatio.py`), volume-weighted price MAs (`Amv01.py`, `CostPriceMa.py`), turnover-shrink factors (`VolumeShrink.py`, `AmountShrinkVol.py`), price-volume correlation (`Corr.py`), plus ~20 more volume-driven alpha factors (`G*.py`, `H21.py`, `VBoll.py`)
 
 ---
 
@@ -151,6 +155,12 @@ Derived from raw OHLC prices, providing normalized reference levels.
 | `AvgPriceToHigh.py` | Price position relative to session high |
 | `AvgPriceToLow.py` | Price position relative to session low |
 | `LowPrice.py` | Low price derived metric |
+| `MaHigh.py` / `MaLow.py` | Moving average of the session high / low |
+| `PctFromNDayHigh.py` | Distance from the highest price of the prior N days |
+| `BreakNDayHigh.py` | Whether price broke the prior N-day high |
+| `MaxDrawdown.py` | Current close relative to its N-day rolling peak (drawdown) |
+| `PricePercentile.py` | Rolling percentile rank of the current price |
+| *(+5 more)* | See `price_feature/` for the full list |
 
 ---
 
@@ -164,6 +174,8 @@ Microstructure features capturing trade execution efficiency and market depth.
 | `Liquidity_v3.py` | General liquidity proxy v3 |
 | `MarketPl.py` | Market placement metric |
 | `MarketPl_v2.py` | Market placement metric v2 |
+| `Illiquidity.py` | Illiquidity ratio — quote volume per unit of intraday price path (alternate formulation) |
+| `LiquidityPctChgMean.py` / `LiquidityPctChgStd.py` | Quote volume per unit of price change — mean / std over N days |
 
 **Amihud formula:**
 
@@ -233,11 +245,11 @@ Each indicator file is self-contained with no cross-file imports.
 quant-ohlcv-features/
 ├── data/
 │   └── btcusd_data.csv          # Sample BTC/USD OHLCV data
-├── momentum_feature/            # 121 momentum indicators
-├── trend_feature/               # 67 trend indicators
-├── volatility_feature/          # 72 volatility indicators
-├── volume_feature/              # 51 volume indicators
-├── price_feature/               # 9 price-derived indicators
-├── liquidity_feature/           # 4 liquidity/microstructure indicators
+├── momentum_feature/            # 240 momentum indicators
+├── trend_feature/               # 73 trend indicators
+├── volatility_feature/          # 107 volatility indicators
+├── volume_feature/              # 82 volume indicators
+├── price_feature/               # 19 price-derived indicators
+├── liquidity_feature/           # 8 liquidity/microstructure indicators
 └── composite_feature/           # 11 multi-factor composite signals
 ```

@@ -7,6 +7,7 @@ def signal(*args):
     n = args[1]
     factor_name = args[2]
 
-    df[factor_name] = df['quote_volume'].rolling(n // 24, min_periods=1).mean() / df['quote_volume'].rolling(n, min_periods=1).mean() -1
+    short_window = max(1, n // 24)
+    df[factor_name] = df['quote_volume'].rolling(short_window, min_periods=1).mean() / df['quote_volume'].rolling(n, min_periods=1).mean() -1
 
     return df

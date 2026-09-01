@@ -20,5 +20,6 @@ def signal(*args):
     df[factor_name] = df['RC_mean']*df['n_day_volatility']
 
     del df['n_day_avg_price'], df['n_day_std'], df['RC']
+    del df['n_day_volatility'], df['RC_mean']
 
     return df

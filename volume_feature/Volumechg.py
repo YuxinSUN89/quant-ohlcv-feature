@@ -1,3 +1,6 @@
+eps = 1e-8
+
+
 def signal(*args):
     df = args[0]
     n = args[1]
@@ -10,9 +13,14 @@ def signal(*args):
     # Captures the maximum directional volume change over N periods. Positive values indicate
     # that large volume surges occurred on up-days; negative values indicate surges on down-days.
     df['hourly_price_change'] = df['close'].pct_change(1)
+    df['direction'] = 0
     df.loc[df['hourly_price_change'] > 0, 'direction'] = 1
     df.loc[df['hourly_price_change'] < 0, 'direction'] = -1
-    df['volume_change'] = df['quote_volume'] / df['quote_volume'].shift(1) * df['direction']
+    df['volume_change'] = df['quote_volume'] / (df['quote_volume'].shift(1) + eps) * df['direction']
     df[factor_name] = df['volume_change'].rolling(n).max()
+
+    del df['hourly_price_change']
+    del df['direction']
+    del df['volume_change']
 
     return df

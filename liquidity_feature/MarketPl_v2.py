@@ -27,9 +27,10 @@ def signal(*args):
     df.loc[condition1 & condition2, 'avg_holding_cost'] = quote_volume_ema / volume_ema
     condition1 = df['avg_p'] > df['high']
     condition2 = df['avg_p'] < df['low']
-    df.loc[condition1 & condition2, 'avg_holding_cost'] = cost_ema
+    df.loc[condition1 | condition2, 'avg_holding_cost'] = cost_ema
     df[factor_name] = df['close'] / (df['avg_holding_cost'] + eps) - 1
 
+    del df['avg_p']
     del df['avg_holding_cost']
 
     return df

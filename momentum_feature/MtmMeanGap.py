@@ -18,4 +18,8 @@ def signal(*args):
 
     df[factor_name] = df['mtm'].rolling(window=n, min_periods=1).mean()/(df['gap'] + eps)
 
+    del df['mtm']
+    del df['_g']
+    del df['gap']
+
     return df

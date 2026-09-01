@@ -69,5 +69,7 @@ def signal(*args):
     del df['TR_sum']
     del df['DI+']
     del df['DI-']
+    del df[f'ADX_DI+_bh_{n}']
+    del df[f'ADX_DI-_bh_{n}']
 
     return df

@@ -17,4 +17,7 @@ def signal(*args):
         window=n, min_periods=1).min()).where(df['close'] - df['open'].shift(n) < 0)
     df[factor_name] = df['scores_high'].fillna(0) + df['scores_low'].fillna(0)  # [-1, 1]
 
+    del df['scores_high']
+    del df['scores_low']
+
     return df

@@ -25,6 +25,6 @@ def signal(*args):
     df[factor_name] = df['distance'] / (df['std'] + eps)
 
     # delete extra columns
-    del df['std'], df['ma'], df['upper'], df['lower']
+    del df['std'], df['ma'], df['upper'], df['lower'], df['distance']
 
     return df

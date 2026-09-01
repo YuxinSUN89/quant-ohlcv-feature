@@ -23,4 +23,9 @@ def signal(*args):
 
     df[factor_name] = df['amplitude_mean'].rolling(n, min_periods=1).rank(ascending=True, pct=True)
 
+    del df['avg_price']
+    del df['price_change']
+    del df['amplitude']
+    del df['amplitude_mean']
+
     return df

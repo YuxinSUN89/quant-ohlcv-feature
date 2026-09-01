@@ -13,4 +13,6 @@ def signal(*args):
     df['mtm'] = df['mtm']*df['taker_buy_quote_asset_volume'] / df['taker_buy_quote_asset_volume'].rolling(window=n, min_periods=1).mean()
     df[factor_name] = df['mtm'].rolling(window=n, min_periods=1).mean()
 
+    del df['mtm']
+
     return df

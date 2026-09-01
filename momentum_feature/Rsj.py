@@ -35,5 +35,6 @@ def signal(*args):
     # remove redundant columns
     del df['return'], df['rv'], df['positive_data'], df['negative_data']
     del df['rv+'], df['rv-'], df['pow_positive_data'], df['pow_negetive_data']
+    del df['pow_return']
 
     return df

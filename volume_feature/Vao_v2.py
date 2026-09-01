@@ -18,4 +18,10 @@ def signal(*args):
     # normalize
     df[factor_name] = df["VAO"] / df["Vao_v2"] - 1
 
+    del df["WV"]
+    del df["VAO"]
+    del df["VAO_MA1"]
+    del df["VAO_MA2"]
+    del df["Vao_v2"]
+
     return df

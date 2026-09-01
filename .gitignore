@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+因子库/

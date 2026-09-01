@@ -11,4 +11,7 @@ def signal(*args):
     df['up'] = df['mtm'].rolling(window=n).max().shift(1)
     df[factor_name] = df['mtm'] - df['up']
 
+    del df['mtm']
+    del df['up']
+
     return df

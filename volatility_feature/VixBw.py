@@ -30,6 +30,7 @@ def signal(*args):
     del df['vix']
     del df['vix_median']
     del df['vix_std']
+    del df['vix_score']
     del df['max']
     del df['min']
     del df['vix_upper'],df['vix_lower']

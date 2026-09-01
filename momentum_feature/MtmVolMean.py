@@ -14,4 +14,7 @@ def signal(*args):
 
     df[factor_name] = df['close_change'] * df['vol_change']
 
+    del df['close_change']
+    del df['vol_change']
+
     return df

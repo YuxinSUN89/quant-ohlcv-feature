@@ -22,4 +22,9 @@ def signal(*args):
     df['min_route'] = df['min_route'].ewm(n, adjust=False).mean()
     df[factor_name] = df['RC'] / (df['min_route']+eps)
 
+    del df['route_1']
+    del df['route_2']
+    del df['min_route']
+    del df['RC']
+
     return df

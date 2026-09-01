@@ -23,4 +23,9 @@ def signal(*args):
     # normalize
     df[factor_name] = df['ema'] / (df['TEMA'] + eps) - 1
 
+    del df['ema']
+    del df['ema_ema']
+    del df['ema_ema_ema']
+    del df['TEMA']
+
     return df
