@@ -176,6 +176,7 @@ Microstructure features capturing trade execution efficiency and market depth.
 | `MarketPl_v2.py` | Market placement metric v2 |
 | `Illiquidity.py` | Illiquidity ratio — quote volume per unit of intraday price path (alternate formulation) |
 | `LiquidityPctChgMean.py` / `LiquidityPctChgStd.py` | Quote volume per unit of price change — mean / std over N days |
+| `BidaskSpread.py` | EDGE effective bid-ask spread estimated from OHLC prices (Ardia, Guidotti & Kroencke, JFE 2024) |
 
 **Amihud formula:**
 
@@ -189,6 +190,15 @@ result = MA(LIQUIDITY_PREMIUM, N)
 ```
 
 Higher values indicate greater liquidity (more volume per unit of price movement).
+
+**BidaskSpread (EDGE) formula:**
+
+```
+BIDASK = EDGE(OPEN, HIGH, LOW, CLOSE) over a rolling 1000-bar window
+result = MA(BIDASK, N)
+```
+
+EDGE estimates the effective spread from the negative serial covariance that the bid-ask bounce creates in open/high/low/close returns. It combines four estimators (OHL, OHLC, CHL, CHLO) with GMM inverse-variance weights and corrects analytically for discretely observed prices, so it stays unbiased for illiquid assets and intraday bars. The output is a fraction (0.01 = 1%), and higher values mean higher trading costs. Source: [Ardia, Guidotti & Kroencke (2024), *Efficient estimation of bid–ask spreads from open, high, low, and close prices*, JFE 161, 103916](https://doi.org/10.1016/j.jfineco.2024.103916). See the module docstring for the full derivation and caveats.
 
 ---
 
